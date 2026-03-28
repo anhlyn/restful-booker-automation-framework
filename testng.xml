@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd">
+<suite name="Restful Booker Suite">
+    <parameter name="ENV_URL" value="https://restful-booker.herokuapp.com"></parameter>
+    <test name="Booking Management Tests">
+        <classes>
+            <class name="RegressionTestSuite">
+                <methods>
+                    <include name="TC_GetBookingIds_Return_200" />
+                    <include name="TC_CreateBooking_Return200" />
+                    <include name="TC_GetBookingByID_Return_200" />
+                    <include name="TC_DeleteByBookingID_Return_201" />
+                    <include name="TC_GetBookingByID_Return_404" />
+                </methods>
+            </class>
+        </classes>
+    </test>
+</suite>
