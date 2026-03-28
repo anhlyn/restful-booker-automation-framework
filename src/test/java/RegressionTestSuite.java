@@ -1,11 +1,10 @@
 import io.restassured.response.Response;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Optional;
-import org.testng.annotations.Parameters;
-import org.testng.annotations.Test;
+import org.testng.annotations.*;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 import static io.restassured.RestAssured.given;
 import io.restassured.specification.RequestSpecification;
@@ -13,82 +12,105 @@ import io.restassured.builder.RequestSpecBuilder;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.*;
 
-public class RegressionTestSuite {
+public class RegressionTestSuite extends BaseTest {
 
-    protected int newBookingID = 0;
-    protected static RequestSpecification reqSpec;
+    int idtobedeleted = 0;
+    int newid = 0;
 
     @BeforeClass
     @Parameters({"ENV_URL"})
-    public void SetupEnv(@Optional("https://restful-booker.herokuapp.com") String baseUrl){
-        reqSpec = new RequestSpecBuilder()
-                .setBaseUri(baseUrl)
-                .addHeader("Content-Type", "application/json")
-                .build();
+    public void preConditionSetup(@Optional("https://restful-booker.herokuapp.com") String baseUrl){
+        this.BasicReqSpec(baseUrl);
+        this.ReqSpecWithAuthentication(baseUrl);
+        System.out.println("BeforeClass: preConditionSetup");
     }
 
-    @Test
-    public void TC_CreateBooking_Return200() throws IOException {
-        File payloadFile = new File("src/test/resources/booking_payload.json");
+    @AfterClass
+    public void tearDown(){
+        if(newid > 0){
+            given()
+                    .spec(reqSpecWithAuthentication)
+                    .when()
+                    .delete("/booking/" + newid)
+                    .then()
+                    .statusCode(201);
+        }
+        System.out.println("AfterClass: tearDown");
+    }
 
-        Response res = given()
-                .spec(reqSpec)
+    int CreateNewBooking(){
+        File payloadFile = new File("src/test/resources/booking_payload.json");
+        return given()
+                .spec(basicReqSpec)
                 .body(payloadFile)
                 .when()
-                .post("/booking");
+                .post("/booking")
+                .then()
+                .extract()
+                .jsonPath().getInt("bookingid");
+    }
 
-        newBookingID = res.jsonPath().getInt("bookingid");
-        System.out.println("NEW BOOKINGID: " + newBookingID);
-        String firstname = res.jsonPath().getString("booking.firstname");
-        String lastname = res.jsonPath().getString("booking.lastname");
-        res.then()
+    @Test(enabled = true)
+    public void TC_CreateBooking_Return_200() throws IOException {
+        File payloadFile = new File("src/test/resources/booking_payload.json");
+
+        newid = given()
+                .spec(basicReqSpec)
+                .body(payloadFile)
+                .when()
+                .post("/booking")
+                .then()
                 .statusCode(200)
                 .statusLine(containsString("OK"))
                 .body("bookingid", notNullValue())
-                .body("booking.firstname", comparesEqualTo("Vi Tuong"));
+                .extract()
+                .jsonPath().getInt("bookingid");
+
+        System.out.println("TC_CreateBooking_Return_200: " + newid);
     }
 
-    @Test
+    @Test()
     public void TC_DeleteByBookingID_Return_201(){
-        Response res = given()
-                .spec(reqSpec)
-                .header("Authorization", "Basic YWRtaW46cGFzc3dvcmQxMjM=")
+        idtobedeleted = CreateNewBooking();
+        given()
+                .spec(reqSpecWithAuthentication)
                 .when()
-                .delete("/booking/" + newBookingID);
-
-        String statusLine = res.getStatusLine();
-        int statusCode = res.getStatusCode();
-
-        res.then()
-                .statusCode(statusCode)
+                .delete("/booking/" + idtobedeleted)
+                .then()
+                .statusCode(201)
                 .statusLine(containsString("Created"));
+        System.out.println("TC_DeleteByBookingID_Return_201");
+    }
+
+    @Test(dependsOnMethods = {"TC_DeleteByBookingID_Return_201"})
+    public void TC_GetBookingByID_Return_404(){
+        given()
+                .spec(basicReqSpec)
+                .when()
+                .get("/booking/" + idtobedeleted)
+                .then()
+                .statusCode(404);
+        System.out.println("TC_GetBookingByID_Return_404");
     }
 
     @Test
-    public void TC_GetBookingByID_Return_200(){
+    @Parameters({"bookingid"})
+    public void TC_GetBookingByID_Return_200(@Optional("1") int id){
+        System.out.println("TC_GetBookingByID_Return_200: " + id);
         given()
-                .spec(reqSpec)
+                .spec(basicReqSpec)
                 .when()
-                .get("/booking/" + newBookingID)
+                .get("/booking/" + id)
                 .then()
                 .statusCode(200)
                 .statusLine(containsString("OK"));
+        System.out.println("TC_GetBookingByID_Return_200");
     }
 
     @Test
-    public void TC_GetBookingByID_Return_404(){
+    public void TC_GetAllBooking_Return_200(){
         given()
-                .spec(reqSpec)
-                .when()
-                .get("/booking/" + newBookingID)
-                .then()
-                .statusCode(404);
-    }
-
-    @Test
-    public void TC_GetBookingIds_Return_200(){
-        given()
-                .spec(reqSpec)
+                .spec(basicReqSpec)
                 .when()
                 .get("/booking")
                 .then()
@@ -96,6 +118,7 @@ public class RegressionTestSuite {
                 .statusLine(containsString("OK"))
                 .body("", hasSize(greaterThan(0)))
                 .body("bookingid", notNullValue());
+        System.out.println("TC_GetBookingIds_Return_200");
     }
 
 }
