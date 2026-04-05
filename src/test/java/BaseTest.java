@@ -6,18 +6,18 @@ public class BaseTest {
     RequestSpecification basicReqSpec;
     RequestSpecification reqSpecWithAuthentication;
 
-    void BasicReqSpec(String baseUrl){
+    void BasicReqSpec(){
          basicReqSpec = new RequestSpecBuilder()
-                .setBaseUri(baseUrl)
+                .setBaseUri(Config.ENV_URL)
                 .addHeader("Content-Type", "application/json")
                 .build();
     }
 
-    void ReqSpecWithAuthentication(String baseUrl){
+    void ReqSpecWithAuthentication(){
         reqSpecWithAuthentication = new RequestSpecBuilder()
-                .setBaseUri(baseUrl)
+                .setBaseUri(Config.ENV_URL)
                 .addHeader("Content-Type", "application/json")
-                .addHeader("Authorization", "Basic YWRtaW46cGFzc3dvcmQxMjM=")
+                .addHeader("Authorization", "Basic " + Config.AUTH_TOKEN)
                 .build();
     }
 
