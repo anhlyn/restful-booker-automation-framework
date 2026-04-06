@@ -123,4 +123,58 @@ public class RegressionTestSuite extends BaseTest {
                 .body("bookingid", notNullValue());
     }
 
+    @Test
+    public void TC_UpdateBooking_Return_200(){
+        BookingDates dates = BookingDates.builder()
+                .checkin("2026-05-15")
+                .checkout("2026-05-16")
+                .build();
+
+        Booking payload = Booking.builder()
+                .firstname("John")
+                .lastname("Nguyen")
+                .totalprice(2500)
+                .depositpaid(true)
+                .bookingdates(dates)
+                .additionalneeds("Swimming Pool")
+                .build();
+        given()
+                .spec(reqSpecWithAuthentication)
+                .body(payload)
+                .when()
+                .put("booking/2")
+                .then()
+                .statusCode(200)
+                .statusLine(containsString("OK"));
+    }
+
+    @Test
+    public void TC_PartialUpdateBooking_Return_200(){
+
+        BookingDates dates = BookingDates.builder()
+                .checkin("2026-05-15")
+                .checkout("2026-05-16")
+                .build();
+        Booking payload = Booking.builder()
+                .firstname("Honey")
+                .bookingdates(dates)
+                .build();
+
+        Response res = given()
+                .spec(reqSpecWithAuthentication)
+                .body(payload)
+                .log().body()
+                .when()
+                .patch("booking/2")
+                .then()
+                .extract()
+                .response();
+
+        res.then().statusLine(containsString("200 OK"));
+        Booking resBooking = res.as(Booking.class);
+        Assert.assertEquals(resBooking.getFirstname(), payload.getFirstname());
+        Assert.assertEquals(resBooking.getBookingdates().getCheckin(), payload.getBookingdates().getCheckin());
+        Assert.assertEquals(resBooking.getBookingdates().getCheckout(), payload.getBookingdates().getCheckout());
+    }
+
 }
