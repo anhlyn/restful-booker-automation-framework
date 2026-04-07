@@ -19,10 +19,10 @@ jobs:
           distribution: 'temurin'
           cache: maven
       - name: Run Automation Tests
-        run: mvn test -DsuiteXmlFile=testng.xml
+        run: mvn test
       - name: Upload Surefire Report
         uses: actions/upload-artifact@v4
         if: always() #ensure the report uploads regardless the test result
         with:
           name: booker-api-surefile-report
-          path: target/surefire-reports/
+          path: target/surefire-reports/Restful Booker Suite
