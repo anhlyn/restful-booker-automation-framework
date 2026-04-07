@@ -20,3 +20,9 @@ jobs:
           cache: maven
       - name: Run Automation Tests
         run: mvn test -DsuiteXmlFile=testng.xml
+      - name: Upload Surefire Report
+        uses: actions/checkout@v4
+        if: always() #ensure the report uploads regardless the test result
+        with:
+          name: booker-api-surefile-report
+          path: target/surefire-reports/
