@@ -25,4 +25,4 @@ jobs:
         if: always() #ensure the report uploads regardless the test result
         with:
           name: booker-api-surefile-report
-          path: target/surefire-reports/Restful Booker Suite
+          path: "target/surefire-reports/Restful Booker Suite"
