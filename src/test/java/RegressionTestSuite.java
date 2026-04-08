@@ -1,4 +1,5 @@
 import io.qameta.allure.restassured.AllureRestAssured;
+import io.restassured.RestAssured;
 import io.restassured.response.Response;
 import models.Booking;
 import models.BookingDates;
@@ -94,7 +95,7 @@ public class RegressionTestSuite extends BaseTest {
         given()
                 .spec(basicReqSpec)
                 .when()
-                .get("/booking/0")
+                .get("/booking/1")
                 .then()
                 .statusCode(404)
                 .statusLine(containsString("Not Found"));
@@ -103,7 +104,6 @@ public class RegressionTestSuite extends BaseTest {
     @Test
     public void TC_GetBookingByID_Return_200(){
         given()
-                .filter(new AllureRestAssured())
                 .spec(basicReqSpec)
                 .when()
                 .get("/booking/2")
@@ -165,7 +165,6 @@ public class RegressionTestSuite extends BaseTest {
         Response res = given()
                 .spec(reqSpecWithAuthentication)
                 .body(payload)
-                .log().body()
                 .when()
                 .patch("booking/2")
                 .then()
