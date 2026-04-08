@@ -1,3 +1,4 @@
+import io.qameta.allure.restassured.AllureRestAssured;
 import io.restassured.response.Response;
 import models.Booking;
 import models.BookingDates;
@@ -102,6 +103,7 @@ public class RegressionTestSuite extends BaseTest {
     @Test
     public void TC_GetBookingByID_Return_200(){
         given()
+                .filter(new AllureRestAssured())
                 .spec(basicReqSpec)
                 .when()
                 .get("/booking/2")
